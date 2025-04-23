@@ -22,11 +22,36 @@ export default function App() {
     PER: 5,
   });
 
-  const [quests, setQuests] = useState<Quest[]>([
-    { id: 1, title: 'Complete 20 Push-ups', xpReward: 20, completed: false },
-    { id: 2, title: 'Run 1 Mile', xpReward: 40, completed: false },
-    { id: 3, title: 'Stretch for 10 minutes', xpReward: 15, completed: false },
-  ]);
+  const generateQuests = (): Quest[] => {
+    const questPool: Quest[] = [
+      { id: 101, title: 'Do 30 Squats', xpReward: 25, completed: false },
+      { id: 102, title: 'Drink 2L of Water', xpReward: 15, completed: false },
+      { id: 103, title: 'Meditate for 10 Minutes', xpReward: 20, completed: false },
+      { id: 104, title: 'Do 10 Pull-Ups', xpReward: 35, completed: false },
+      { id: 105, title: 'Walk 5,000 Steps', xpReward: 30, completed: false },
+      { id: 106, title: 'Hold a Plank for 1 Minute', xpReward: 20, completed: false },
+      { id: 106, title: 'Do 10 Push-Ups', xpReward: 35, completed: false },
+    ];
+    const shuffled = [...questPool].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 3);
+  };
+
+  const startCooldown = (seconds: number) => {
+    setCooldown(seconds);
+    const interval = setInterval(() => {
+      setCooldown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+  
+
+  const [quests, setQuests] = useState<Quest[]>(generateQuests());
+  const [cooldown, setCooldown] = useState(0);
 
   const gainXp = (amount: number) => {
     const totalXp = xp + amount;
@@ -34,7 +59,7 @@ export default function App() {
       const leftover = totalXp % xpPerLevel;
       const levelsGained = Math.floor(totalXp / xpPerLevel);
       setLevel(prev => prev + levelsGained);
-      setAbilityPoints(prev => prev + levelsGained * 3); // 3 pts per level
+      setAbilityPoints(prev => prev + levelsGained * 3); // 3 points per level
       setXp(leftover);
     } else {
       setXp(totalXp);
@@ -90,7 +115,22 @@ export default function App() {
 
       {/* Quest Panel */}
       <div className="w-full max-w-md bg-[#141422] border border-purple-700 shadow-lg rounded-xl p-4 space-y-4">
-        <h2 className="text-xl font-bold text-purple-300 text-center">🧭 Quests</h2>
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-xl font-bold text-purple-300">🧭 Quests</h2>
+          <button
+            disabled={cooldown > 0}
+            onClick={() => {
+              setQuests(generateQuests());
+              startCooldown(3); // 10 second cooldown
+            }}
+            className={`text-sm px-3 py-1 rounded border transition
+              ${cooldown > 0 
+                ? 'border-gray-500 text-gray-400 cursor-not-allowed' 
+                : 'border-blue-400 text-blue-300 hover:bg-blue-600 hover:text-white'}`}
+          >
+            {cooldown > 0 ? `Wait ${cooldown}s` : '🔄 Refresh'}
+          </button>
+        </div>
         {quests.map(q => (
           <div
             key={q.id}
