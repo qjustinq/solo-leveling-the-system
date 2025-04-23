@@ -33,8 +33,11 @@ export default function App() {
       { id: 106, title: 'Do 10 Push-Ups', xpReward: 35, completed: false },
     ];
     const shuffled = [...questPool].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 3);
-  };
+    return shuffled.slice(0, 3).map((quest, index) => ({
+      ...quest,
+      id: Date.now() + index,
+    }));
+};
 
   const startCooldown = (seconds: number) => {
     setCooldown(seconds);
@@ -52,6 +55,7 @@ export default function App() {
 
   const [quests, setQuests] = useState<Quest[]>(generateQuests());
   const [cooldown, setCooldown] = useState(0);
+  const allQuestsCompleted = quests.every(q => q.completed);
 
   const gainXp = (amount: number) => {
     const totalXp = xp + amount;
@@ -71,7 +75,9 @@ export default function App() {
       prev.map(q => (q.id === id ? { ...q, completed: true } : q))
     );
     const quest = quests.find(q => q.id === id);
-    if (quest) gainXp(quest.xpReward);
+    if (quest && !quest.completed) {
+      gainXp(quest.xpReward);
+    }
   };
 
   const increaseStat = (stat: StatType) => {
@@ -118,17 +124,25 @@ export default function App() {
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-xl font-bold text-purple-300">🧭 Quests</h2>
           <button
-            disabled={cooldown > 0}
+            disabled={cooldown > 0 || !allQuestsCompleted}
             onClick={() => {
               setQuests(generateQuests());
-              startCooldown(3); // 10 second cooldown
+              startCooldown(3); // 3-second cooldown
             }}
-            className={`text-sm px-3 py-1 rounded border transition
-              ${cooldown > 0 
-                ? 'border-gray-500 text-gray-400 cursor-not-allowed' 
-                : 'border-blue-400 text-blue-300 hover:bg-blue-600 hover:text-white'}`}
+            className={`text-sm px-3 py-1 rounded border transition relative
+              ${
+                !allQuestsCompleted
+                  ? 'border-gray-500 text-gray-400 cursor-not-allowed'
+                  : cooldown > 0
+                  ? 'border-gray-500 text-gray-400 cursor-not-allowed'
+                  : 'border-blue-400 text-blue-300 hover:bg-blue-600 hover:text-white'
+              }`}
           >
-            {cooldown > 0 ? `Wait ${cooldown}s` : '🔄 Refresh'}
+            {cooldown > 0
+              ? `Wait ${cooldown}s`
+              : !allQuestsCompleted
+              ? 'Complete All Quests'
+              : '🔄 Refresh'}
           </button>
         </div>
         {quests.map(q => (
