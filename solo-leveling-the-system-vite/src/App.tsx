@@ -11,18 +11,18 @@ type Quest = {
 };
 
 export default function App() {
-  const [level, setLevel] = useState(1);
+  const [level, setLevel] = useState(0);
   const [xp, setXp] = useState(0);
   const [xpPerLevel] = useState(100);
   const [abilityPoints, setAbilityPoints] = useState(0);
   const [cooldown, setCooldown] = useState(0);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    STR: 5,
-    AGI: 5,
-    VIT: 5,
-    INT: 5,
-    PER: 5,
+    STR: 0,
+    AGI: 0,
+    VIT: 0,
+    INT: 0,
+    PER: 0,
   });
 
   useEffect(() => {
@@ -88,9 +88,38 @@ export default function App() {
     }, 1000);
   };
 
+  
+  const getHunterRank = (lvl: number): string => {
+    if (lvl >= 150) return 'Nation Rank';
+    if (lvl >= 100) return 'S Rank';
+    if (lvl >= 76) return 'A Rank';
+    if (lvl >= 51) return 'B Rank';
+    if (lvl >= 26) return 'C Rank';
+    if (lvl >= 11) return 'D Rank';
+    return 'E Rank';
+  };
+  
+
   const allQuestsCompleted = quests.every(q => q.completed);
 
-  // 🔄 LOADING SCREEN
+    // Save to localStorage
+  useEffect(() => {
+    localStorage.setItem('hunter-data', JSON.stringify({ level, xp, stats, abilityPoints }));
+  }, [level, xp, stats, abilityPoints]);
+
+  // Load on startup
+  useEffect(() => {
+    const saved = localStorage.getItem('hunter-data');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setLevel(parsed.level);
+      setXp(parsed.xp);
+      setStats(parsed.stats);
+      setAbilityPoints(parsed.abilityPoints);
+    }
+  }, []);
+
+  //LOADING SCREEN
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 animate-fadeIn">
@@ -119,7 +148,21 @@ export default function App() {
       <div className="relative w-full max-w-md bg-[#1a1a2e] bg-opacity-90 rounded-xl border border-purple-700 shadow-2xl p-6 space-y-4 animate-fadeIn">
         <h1 className="text-center text-3xl font-extrabold tracking-widest text-purple-400">STATUS</h1>
         <div className="text-center text-white text-2xl font-bold">Level {level}</div>
+
+        <div className="text-center text-purple-300 font-semibold">
+            Hunter Rank: <span className="text-white">{getHunterRank(level)}</span>
+        </div>
+
         <div className="text-center text-sm text-purple-400 mb-2">XP: {xp} / {xpPerLevel}</div>
+
+        <div className="w-full bg-gray-800 h-3 rounded-full overflow-hidden">
+
+        <div
+          className="bg-purple-500 h-full transition-all"
+          style={{ width: `${(xp / xpPerLevel) * 100}%` }}
+        />
+      </div>
+
 
         <div className="grid grid-cols-2 gap-3 text-sm">
           {(Object.keys(stats) as StatType[]).map(stat => (
