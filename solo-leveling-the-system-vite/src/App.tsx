@@ -7,9 +7,11 @@ type Quest = {
   id: number;
   title: string;
   xpReward: number;
+  coinReward: number;
   completed: boolean;
   isCustom: boolean;
 };
+
 
 
 export default function App() {
@@ -27,8 +29,10 @@ export default function App() {
     PER: 0,
   });
 
+  
   const [newQuestTitle, setNewQuestTitle] = useState('');
   const [newQuestXp, setNewQuestXp] = useState(10);
+  const [coins, setCoins] = useState(0);
 
   useEffect(() => {
     const timeout = setTimeout(() => setLoading(false), 2000);
@@ -45,17 +49,18 @@ export default function App() {
 
   const generateQuests = (): Quest[] => {
     const questPool: Quest[] = [
-      { id: 1, title: 'Do 30 Squats', xpReward: 25, completed: false, isCustom: false },
-      { id: 2, title: 'Drink 2L of Water', xpReward: 15, completed: false, isCustom: false },
-      { id: 3, title: 'Meditate for 10 Minutes', xpReward: 20, completed: false, isCustom: false },
-      { id: 4, title: 'Do 10 Pull-Ups', xpReward: 35, completed: false, isCustom: false },
-      { id: 5, title: 'Walk 5,000 Steps', xpReward: 30, completed: false, isCustom: false },
-      { id: 6, title: 'Hold a Plank for 1 Minute', xpReward: 20, completed: false, isCustom: false },
-      { id: 7, title: 'Do 10 Push-Ups', xpReward: 35, completed: false, isCustom: false },
+      { id: 1, title: 'Do 30 Squats', xpReward: 25, coinReward: 10, completed: false, isCustom: false },
+      { id: 2, title: 'Drink 2L of Water', xpReward: 15, coinReward: 5, completed: false, isCustom: false },
+      { id: 3, title: 'Meditate for 10 Minutes', xpReward: 20, coinReward: 7, completed: false, isCustom: false },
+      { id: 4, title: 'Do 10 Pull-Ups', xpReward: 35, coinReward: 15, completed: false, isCustom: false },
+      { id: 5, title: 'Walk 5,000 Steps', xpReward: 30, coinReward: 12, completed: false, isCustom: false },
+      { id: 6, title: 'Hold a Plank for 1 Minute', xpReward: 20, coinReward: 8, completed: false, isCustom: false },
+      { id: 7, title: 'Do 10 Push-Ups', xpReward: 35, coinReward: 15, completed: false, isCustom: false },
     ];
     const shuffled = [...questPool].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, 3);
   };
+  
 
   const [quests, setQuests] = useState<Quest[]>(generateQuests());
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -80,8 +85,10 @@ export default function App() {
     const quest = quests.find(q => q.id === id);
     if (quest && !quest.completed) {
       gainXp(quest.xpReward);
+      setCoins(prev => prev + quest.coinReward);
     }
   };
+  
 
   const deleteQuest = (id: number) => {
     setQuests(prev => prev.filter(q => q.id !== id));
@@ -177,6 +184,11 @@ export default function App() {
 
         <div className="text-center text-sm text-purple-400 mb-2">XP: {xp} / {xpPerLevel}</div>
 
+        <div className="text-center text-yellow-400 font-bold mt-2">
+          Coins: {coins}
+        </div>
+
+
         <div className="w-full bg-gray-800 h-3 rounded-full overflow-hidden">
 
         <div
@@ -261,6 +273,7 @@ export default function App() {
                 id: Date.now(),
                 title: newQuestTitle.trim(),
                 xpReward: newQuestXp,
+                coinReward: Math.floor(newQuestXp / 2),
                 completed: false,
                 isCustom: true,
               };
