@@ -8,7 +8,9 @@ type Quest = {
   title: string;
   xpReward: number;
   completed: boolean;
+  isCustom: boolean;
 };
+
 
 export default function App() {
   const [level, setLevel] = useState(0);
@@ -35,13 +37,13 @@ export default function App() {
 
   const generateQuests = (): Quest[] => {
     const questPool: Quest[] = [
-      { id: 1, title: 'Do 30 Squats', xpReward: 25, completed: false },
-      { id: 2, title: 'Drink 2L of Water', xpReward: 15, completed: false },
-      { id: 3, title: 'Meditate for 10 Minutes', xpReward: 20, completed: false },
-      { id: 4, title: 'Do 10 Pull-Ups', xpReward: 35, completed: false },
-      { id: 5, title: 'Walk 5,000 Steps', xpReward: 30, completed: false },
-      { id: 6, title: 'Hold a Plank for 1 Minute', xpReward: 20, completed: false },
-      { id: 7, title: 'Do 10 Push-Ups', xpReward: 35, completed: false },
+      { id: 1, title: 'Do 30 Squats', xpReward: 25, completed: false, isCustom: false },
+      { id: 2, title: 'Drink 2L of Water', xpReward: 15, completed: false, isCustom: false },
+      { id: 3, title: 'Meditate for 10 Minutes', xpReward: 20, completed: false, isCustom: false },
+      { id: 4, title: 'Do 10 Pull-Ups', xpReward: 35, completed: false, isCustom: false },
+      { id: 5, title: 'Walk 5,000 Steps', xpReward: 30, completed: false, isCustom: false },
+      { id: 6, title: 'Hold a Plank for 1 Minute', xpReward: 20, completed: false, isCustom: false },
+      { id: 7, title: 'Do 10 Push-Ups', xpReward: 35, completed: false, isCustom: false },
     ];
     const shuffled = [...questPool].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, 3);
@@ -247,7 +249,9 @@ export default function App() {
                 title: newQuestTitle.trim(),
                 xpReward: newQuestXp,
                 completed: false,
+                isCustom: true,
               };
+              
               setQuests(prev => [...prev, newQuest]);
               setNewQuestTitle('');
               setNewQuestXp(10);
@@ -269,15 +273,15 @@ export default function App() {
               <span>{q.title}</span>
               <span className="text-xs text-purple-400">+{q.xpReward} XP</span>
             </div>
-            {!q.completed && (
-              
-            <button
-              onClick={() => deleteQuest(q.id)}
-              className="ml-2 text-red-400 text-xs hover:text-red-600"
-            >
-              🗑️ Delete
-            </button>
-          )}
+
+            {q.isCustom && !q.completed && (
+              <button
+                onClick={() => deleteQuest(q.id)}
+                className="ml-2 text-red-400 text-xs hover:text-red-600"
+              >
+                🗑️ Delete
+              </button>
+            )}
 
             <button
               disabled={q.completed}
