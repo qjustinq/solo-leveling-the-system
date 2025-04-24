@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import SoloLevelingLogo from './assets/solo-leveling-logo.png';
+import { themes, ThemeName } from './themeConfig';
+
 
 type StatType = 'STR' | 'AGI' | 'VIT' | 'INT' | 'PER';
 
@@ -64,6 +66,9 @@ export default function App() {
 
   const [quests, setQuests] = useState<Quest[]>(generateQuests());
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  const [theme, setTheme] = useState<ThemeName>('darkArcane');
+  const currentTheme = themes[theme];
 
   const gainXp = (amount: number) => {
     const totalXp = xp + amount;
@@ -161,7 +166,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-white flex flex-col items-center justify-center font-mono p-4 space-y-6">
+    <div className={`min-h-screen bg-gradient-to-br ${currentTheme.gradient} text-white flex flex-col items-center justify-center font-mono p-4 space-y-6`}>
       {/* Logo */}
       <img
         src={SoloLevelingLogo}
@@ -172,6 +177,19 @@ export default function App() {
       <p className="text-purple-300 text-sm mb-4 tracking-widest">
         {currentTime.toLocaleTimeString()}
       </p>
+
+      <select
+        onChange={(e) => setTheme(e.target.value as ThemeName)}
+        value={theme}
+        className="mb-4 px-3 py-1 text-sm bg-black text-white border border-gray-600 rounded"
+      >
+        {Object.entries(themes).map(([key, t]) => (
+          <option key={key} value={key}>
+            {t.name}
+          </option>
+        ))}
+      </select>
+
 
       {/* Status Panel */}
       <div className="relative w-full max-w-md bg-[#1a1a2e] bg-opacity-90 rounded-xl border border-purple-700 shadow-2xl p-6 space-y-4 animate-fadeIn">
