@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import SoloLevelingLogo from './assets/solo-leveling-logo.png';
+import ShopPanel from './components/ShopPanel';
+
 
 type StatType = 'STR' | 'AGI' | 'VIT' | 'INT' | 'PER';
 
@@ -33,6 +35,8 @@ export default function App() {
   const [newQuestTitle, setNewQuestTitle] = useState('');
   const [newQuestXp, setNewQuestXp] = useState(10);
   const [coins, setCoins] = useState(0);
+  const [showShop, setShowShop] = useState(false);
+
 
   useEffect(() => {
     const timeout = setTimeout(() => setLoading(false), 2000);
@@ -160,6 +164,15 @@ export default function App() {
     );
   }
 
+  const handlePurchase = (item: { name: string; cost: number }) => {
+    if (coins >= item.cost) {
+      setCoins(prev => prev - item.cost);
+      alert(`You bought: ${item.name}`);
+    } else {
+      alert("Not enough coins!");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-white flex flex-col items-center justify-center font-mono p-4 space-y-6">
       {/* Logo */}
@@ -168,6 +181,16 @@ export default function App() {
         alt="Solo Leveling Logo"
         className="w-80 md:w-96 mb-6 drop-shadow-xl"
       />
+
+      <button
+        onClick={() => setShowShop(true)}
+        className="text-sm px-4 py-1 rounded border border-yellow-400 text-yellow-300 hover:bg-yellow-500 hover:text-black"
+      >
+        🛒 Open Shop
+      </button>
+
+      
+
 
       <p className="text-purple-300 text-sm mb-4 tracking-widest">
         {currentTime.toLocaleTimeString()}
@@ -323,6 +346,14 @@ export default function App() {
           </div>
         ))}
       </div>
+
+      {showShop && (
+        <ShopPanel
+          coins={coins}
+          onPurchase={handlePurchase}
+          closeShop={() => setShowShop(false)}
+        />
+      )}
     </div>
   );
 }
