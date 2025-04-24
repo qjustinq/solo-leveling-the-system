@@ -35,6 +35,14 @@ export default function App() {
     return () => clearTimeout(timeout);
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+  
+
   const generateQuests = (): Quest[] => {
     const questPool: Quest[] = [
       { id: 1, title: 'Do 30 Squats', xpReward: 25, completed: false, isCustom: false },
@@ -50,6 +58,7 @@ export default function App() {
   };
 
   const [quests, setQuests] = useState<Quest[]>(generateQuests());
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const gainXp = (amount: number) => {
     const totalXp = xp + amount;
@@ -152,6 +161,10 @@ export default function App() {
         alt="Solo Leveling Logo"
         className="w-80 md:w-96 mb-6 drop-shadow-xl"
       />
+
+      <p className="text-purple-300 text-sm mb-4 tracking-widest">
+        {currentTime.toLocaleTimeString()}
+      </p>
 
       {/* Status Panel */}
       <div className="relative w-full max-w-md bg-[#1a1a2e] bg-opacity-90 rounded-xl border border-purple-700 shadow-2xl p-6 space-y-4 animate-fadeIn">
