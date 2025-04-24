@@ -25,6 +25,9 @@ export default function App() {
     PER: 0,
   });
 
+  const [newQuestTitle, setNewQuestTitle] = useState('');
+  const [newQuestXp, setNewQuestXp] = useState(10);
+
   useEffect(() => {
     const timeout = setTimeout(() => setLoading(false), 2000);
     return () => clearTimeout(timeout);
@@ -67,6 +70,10 @@ export default function App() {
     if (quest && !quest.completed) {
       gainXp(quest.xpReward);
     }
+  };
+
+  const deleteQuest = (id: number) => {
+    setQuests(prev => prev.filter(q => q.id !== id));
   };
 
   const increaseStat = (stat: StatType) => {
@@ -193,6 +200,7 @@ export default function App() {
       <div className="w-full max-w-md bg-[#141422] border border-purple-700 shadow-lg rounded-xl p-4 space-y-4">
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-xl font-bold text-purple-300">🧭 Quests</h2>
+          
           <button
             disabled={cooldown > 0 || !allQuestsCompleted}
             onClick={() => {
@@ -213,6 +221,43 @@ export default function App() {
               : '🔄 Refresh'}
           </button>
         </div>
+        <div className="flex flex-col sm:flex-row items-center gap-2 mb-4">
+
+          <input
+            type="text"
+            placeholder="New quest title..."
+            value={newQuestTitle}
+            onChange={(e) => setNewQuestTitle(e.target.value)}
+            className="flex-1 px-2 py-1 rounded bg-black text-white border border-purple-600"
+          />
+          <input
+            type="number"
+            min={1}
+            max={100}
+            value={newQuestXp}
+            onChange={(e) => setNewQuestXp(parseInt(e.target.value))}
+            className="w-20 px-2 py-1 rounded bg-black text-white border border-purple-600"
+          />
+          <button
+            onClick={() => {
+              if (newQuestTitle.trim() === '') return;
+
+              const newQuest: Quest = {
+                id: Date.now(),
+                title: newQuestTitle.trim(),
+                xpReward: newQuestXp,
+                completed: false,
+              };
+              setQuests(prev => [...prev, newQuest]);
+              setNewQuestTitle('');
+              setNewQuestXp(10);
+            }}
+            className="px-3 py-1 rounded text-sm font-semibold border border-green-400 text-green-300 hover:bg-green-600 hover:text-white"
+          >
+            Add Quest
+          </button>
+        </div>
+
         {quests.map(q => (
           <div
             key={q.id}
@@ -224,6 +269,16 @@ export default function App() {
               <span>{q.title}</span>
               <span className="text-xs text-purple-400">+{q.xpReward} XP</span>
             </div>
+            {!q.completed && (
+              
+            <button
+              onClick={() => deleteQuest(q.id)}
+              className="ml-2 text-red-400 text-xs hover:text-red-600"
+            >
+              🗑️ Delete
+            </button>
+          )}
+
             <button
               disabled={q.completed}
               onClick={() => completeQuest(q.id)}
