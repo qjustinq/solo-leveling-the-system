@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import SoloLevelingLogo from './assets/solo-leveling-logo.png';
 
 type StatType = 'STR' | 'AGI' | 'VIT' | 'INT' | 'PER';
 
@@ -14,6 +15,8 @@ export default function App() {
   const [xp, setXp] = useState(0);
   const [xpPerLevel] = useState(100);
   const [abilityPoints, setAbilityPoints] = useState(0);
+  const [cooldown, setCooldown] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     STR: 5,
     AGI: 5,
@@ -22,40 +25,26 @@ export default function App() {
     PER: 5,
   });
 
+  useEffect(() => {
+    const timeout = setTimeout(() => setLoading(false), 2000);
+    return () => clearTimeout(timeout);
+  }, []);
+
   const generateQuests = (): Quest[] => {
     const questPool: Quest[] = [
-      { id: 101, title: 'Do 30 Squats', xpReward: 25, completed: false },
-      { id: 102, title: 'Drink 2L of Water', xpReward: 15, completed: false },
-      { id: 103, title: 'Meditate for 10 Minutes', xpReward: 20, completed: false },
-      { id: 104, title: 'Do 10 Pull-Ups', xpReward: 35, completed: false },
-      { id: 105, title: 'Walk 5,000 Steps', xpReward: 30, completed: false },
-      { id: 106, title: 'Hold a Plank for 1 Minute', xpReward: 20, completed: false },
-      { id: 106, title: 'Do 10 Push-Ups', xpReward: 35, completed: false },
+      { id: 1, title: 'Do 30 Squats', xpReward: 25, completed: false },
+      { id: 2, title: 'Drink 2L of Water', xpReward: 15, completed: false },
+      { id: 3, title: 'Meditate for 10 Minutes', xpReward: 20, completed: false },
+      { id: 4, title: 'Do 10 Pull-Ups', xpReward: 35, completed: false },
+      { id: 5, title: 'Walk 5,000 Steps', xpReward: 30, completed: false },
+      { id: 6, title: 'Hold a Plank for 1 Minute', xpReward: 20, completed: false },
+      { id: 7, title: 'Do 10 Push-Ups', xpReward: 35, completed: false },
     ];
     const shuffled = [...questPool].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 3).map((quest, index) => ({
-      ...quest,
-      id: Date.now() + index,
-    }));
-};
-
-  const startCooldown = (seconds: number) => {
-    setCooldown(seconds);
-    const interval = setInterval(() => {
-      setCooldown(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    return shuffled.slice(0, 3);
   };
-  
 
   const [quests, setQuests] = useState<Quest[]>(generateQuests());
-  const [cooldown, setCooldown] = useState(0);
-  const allQuestsCompleted = quests.every(q => q.completed);
 
   const gainXp = (amount: number) => {
     const totalXp = xp + amount;
@@ -63,7 +52,7 @@ export default function App() {
       const leftover = totalXp % xpPerLevel;
       const levelsGained = Math.floor(totalXp / xpPerLevel);
       setLevel(prev => prev + levelsGained);
-      setAbilityPoints(prev => prev + levelsGained * 3); // 3 points per level
+      setAbilityPoints(prev => prev + levelsGained * 3);
       setXp(leftover);
     } else {
       setXp(totalXp);
@@ -86,8 +75,46 @@ export default function App() {
     setAbilityPoints(prev => prev - 1);
   };
 
+  const startCooldown = (seconds: number) => {
+    setCooldown(seconds);
+    const interval = setInterval(() => {
+      setCooldown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const allQuestsCompleted = quests.every(q => q.completed);
+
+  // 🔄 LOADING SCREEN
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 animate-fadeIn">
+        <img
+          src={SoloLevelingLogo}
+          alt="Loading Logo"
+          className="w-72 md:w-96 animate-pulse"
+        />
+        <p className="mt-6 text-purple-300 text-sm tracking-widest animate-fadeIn">
+          System Initializing...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-white flex flex-col items-center justify-center font-mono p-4 space-y-6">
+      {/* Logo */}
+      <img
+        src={SoloLevelingLogo}
+        alt="Solo Leveling Logo"
+        className="w-80 md:w-96 mb-6 drop-shadow-xl"
+      />
+
       {/* Status Panel */}
       <div className="relative w-full max-w-md bg-[#1a1a2e] bg-opacity-90 rounded-xl border border-purple-700 shadow-2xl p-6 space-y-4 animate-fadeIn">
         <h1 className="text-center text-3xl font-extrabold tracking-widest text-purple-400">STATUS</h1>
@@ -127,13 +154,11 @@ export default function App() {
             disabled={cooldown > 0 || !allQuestsCompleted}
             onClick={() => {
               setQuests(generateQuests());
-              startCooldown(3); // 3-second cooldown
+              startCooldown(3);
             }}
-            className={`text-sm px-3 py-1 rounded border transition relative
+            className={`text-sm px-3 py-1 rounded border transition
               ${
-                !allQuestsCompleted
-                  ? 'border-gray-500 text-gray-400 cursor-not-allowed'
-                  : cooldown > 0
+                !allQuestsCompleted || cooldown > 0
                   ? 'border-gray-500 text-gray-400 cursor-not-allowed'
                   : 'border-blue-400 text-blue-300 hover:bg-blue-600 hover:text-white'
               }`}
